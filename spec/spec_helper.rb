@@ -72,7 +72,7 @@ else
 end
 
 def clean_database!
-  models = [RocketTag::Tag, RocketTag::Tagging, TaggableModel, RocketTag::AliasTag]
+  models = [RocketTag::Tag, RocketTag::Tagging, TaggableModel]
   models.each do |model|
     ActiveRecord::Base.connection.execute "DELETE FROM #{model.table_name}"
   end

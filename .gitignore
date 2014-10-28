@@ -54,3 +54,5 @@ spec/debug.log
 
 # RVM is building this directory. WTF?
 rake
+
+/.idea/

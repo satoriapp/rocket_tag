@@ -181,63 +181,47 @@ module RocketTag
         t = self.table_name
 
         q = joins{taggings.tag}
-
-        alias_tag_names = lambda do |list|
-          names = RocketTag::Tag.select{:name}.where do
-            id.in(RocketTag::Tag.select{'alias_tags.alias_id'}.joins(:alias).where{
-                tags.name.in(list)
-              })
-          end
-          names.map{|t| t.name}
-        end
-
         case tags_list
-        when Hash
-          # A tag can only match it's context
+          when Hash
+            # A tag can only match it's context
 
-          c = tags_list.each_key.map do |context|
-            squeel do
-              list = tags_list[context]
-              clean_list = RocketTag.clean_tags(list)
-              clean_list << alias_tag_names.call(clean_list)
-              clean_list.flatten!
-              tags.name.in(clean_list) & (taggings.context == context.to_s)
+            c = tags_list.each_key.map do |context|
+              squeel do
+                tags.name.in(tags_list[context]) & (taggings.context == context.to_s)
+              end
+            end.inject do |s,t|
+              s | t
             end
-          end.inject do |s,t|
-            s | t
-          end
 
-          q = q.where(c)
+            q = q.where(c)
 
-        else
-          # Any tag can match any context
-          clean_list = RocketTag.clean_tags(tags_list)
-          clean_list << alias_tag_names.call(clean_list)
-          clean_list.flatten!
-          q = q.
-            where{tags.name.in(clean_list)}.
-            where(with_tag_context(options.delete(:on)))
+          else
+            # Any tag can match any context
+            q = q.
+                where{tags.name.in(tags_list)}.
+                where(with_tag_context(options.delete(:on)))
         end
 
         q = q.group_by_all_columns.
-          select{count(tags.id).as( tags_count)}.
-          select{"#{t}.*"}.
-          order("tags_count desc")
+            select{count(tags.id).as( tags_count)}.
+            select{"#{t}.*"}.
+            order("tags_count desc")
 
         # Isolate the aggregate uery by wrapping it as
         #
         # select * from ( ..... ) tags
+
         # remove `.arel` dependency
         q = from(q.as(self.table_name))
+
 
         # Restrict by minimum tag counts if required
         min = options.delete :min
         q = q.where{tags_count>=min} if min
 
         # Require all the tags if required
-        all, exact = options.delete(:all), options.delete(:exact)
-        q = q.where{tags_count==tags_list.length} if all || exact
-        q = q.joins{taggings.tag}.group("#{self.table_name}.id").having('COUNT(tags.id) = ?', tags_list.length) if exact
+        all = options.delete :all
+        q = q.where{tags_count==tags_list.length} if all
 
         # Return the relation
         q

@@ -47,4 +47,3 @@ class NonStandardIdTaggableModel < ActiveRecord::Base
   attr_taggable :needs, :offerings
   has_many :untaggable_models
 end
-

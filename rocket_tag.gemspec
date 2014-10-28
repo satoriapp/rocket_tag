@@ -29,7 +29,6 @@ Gem::Specification.new do |s|
     "lib/generators/rocket_tag/migration/migration_generator.rb",
     "lib/generators/rocket_tag/migration/templates/active_record/migration.rb",
     "lib/rocket_tag.rb",
-    "lib/rocket_tag/alias_tag.rb",
     "lib/rocket_tag/configuration.rb",
     "lib/rocket_tag/tag.rb",
     "lib/rocket_tag/taggable.rb",
