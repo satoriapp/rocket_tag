@@ -62,7 +62,7 @@ module RocketTag
     end
 
     def taggings_for_context context_val
-      taggings.where{ taggings.context == context_val.to_s }
+      taggings.where('taggings.context': context_val.to_s)
     end
 
     def destroy_tags_for_context context
