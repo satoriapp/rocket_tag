@@ -188,7 +188,7 @@ describe TaggableModel do
 
         @t00.tagged_similar(:on => [:languages, :skills]).count.should == 4
 
-        # Effectively similar to specifying all the contexts in 
+        # Effectively similar to specifying all the contexts in
         # the on clause
         @t00.tagged_similar.count.should == 4
       end
@@ -350,24 +350,13 @@ describe TaggableModel do
           TaggableModel.popular_tags(:on=>[:skills, :languages]).order('id asc').first.name.should == 'a'
           TaggableModel.popular_tags(:on=>[:skills, :languages]).order('id asc').last.name.should == 'jinglish'
           TaggableModel.popular_tags(:min=>2).count.should == 6 ## dirty!
-
-
-
         end
       end
 
       describe "tag cloud calculations" do
         it "should return tags on an association and the counts thereof" do
-#           @user0.taggable_models.popular_tags.each do |tag|
-#             puts "#{tag.name}\t#{tag.tags_count}"
-#           end
-#           puts "-------------"
-#           @user1.taggable_models.popular_tags.each do |tag|
-#             puts "#{tag.name}\t#{tag.tags_count}"
-#           end
-
-# Check that the tags_count on each tag is in
-# descending order.
+          # Check that the tags_count on each tag is in
+          # descending order.
           @user0.taggable_models.popular_tags.count.should == 8
           @user0.taggable_models.popular_tags.inject do |s, t|
             s.tags_count.should >= t.tags_count
@@ -383,7 +372,6 @@ describe TaggableModel do
           # Sanity check the two queries are not identical
           @user0.taggable_models.popular_tags.should_not ==
               @user1.taggable_models.popular_tags
-
         end
       end
     end

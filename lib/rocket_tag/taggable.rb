@@ -232,35 +232,32 @@ module RocketTag
       #
       # User.documents.tags
       def tags(options = {})
-
         # Grab the current scope
-        s = select{id}
+        self_ids = self.select(:id)
 
         # Grab table name
-        t = self.to_s
+        table_name = self.to_s
 
-        q = RocketTag::Tag.joins{taggings}.
-          where{taggings.taggable_type==t}.  # Apply taggable type
-          where{taggings.taggable_id.in(s)}. # Apply current scope
-          where(with_tag_context(options.delete(:on))). # Restrict by context
-          group_by_all_columns.
-          select{count(tags.id).as(tags_count)}.
-          select('tags.*').
-          order("tags_count desc")
+        q = RocketTag::Tag.joins(:taggings).
+            where('taggings.taggable_type': table_name).       # Apply taggable type
+            where('taggings.taggable_id IN (?)', self_ids).    # Apply current scope
+            where(with_tag_context(options.delete(:on))).      # Restrict by context
+            group_by_all_columns.
+            select("COUNT(tags.id) AS tags_count").
+            select('tags.*').
+            order("tags_count desc")
 
         # Isolate the aggregate query by wrapping it as
         #
         # select * from ( ..... ) tags
-        q = RocketTag::Tag.from(q.as(RocketTag::Tag.table_name))
-        #q = RocketTag::Tag.from(q.arel.as(RocketTag::Tag.table_name))
+        q = RocketTag::Tag.from("(#{q.to_sql}) tags")
 
         # Restrict by minimum tag counts if required
         min = options.delete :min
-        q = q.where{tags_count>=min} if min
+        q = q.where("tags_count >= ?", min) if min
 
         # Return the relation
         q
-
       end
 
       # Generates a query that returns list of popular tags
