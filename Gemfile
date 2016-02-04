@@ -11,6 +11,6 @@ group :development do
   gem 'yard',     '~> 0.6.0'
   gem 'bundler',  '>= 1.2.0'
   gem 'jeweler',  '~> 1.6.4'
-  gem 'sqlite3'
+  gem 'sqlite3',  '1.3.11'
   gem 'rake'
 end
