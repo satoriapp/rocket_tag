@@ -1,6 +1,6 @@
 class TaggableModel < ActiveRecord::Base
   default_scope do
-    preload{taggings}.preload{tags}
+    preload(:taggings).preload(:tags)
   end
 
   attr_taggable
