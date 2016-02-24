@@ -75,17 +75,15 @@ describe TaggableModel do
     end
 
     it "should generate the correct results" do
-
       TaggableModel.tagged_with(%w[a b], :all=>true).distinct.count.should == 6
-      TaggableModel.tagged_with(%w[a b], :all=>true).where{name.like "app%"}.distinct.count.should == 3
+      TaggableModel.tagged_with(%w[a b], :all=>true).where("name LIKE 'app%'").distinct.count.should == 3
 
-      TaggableModel.tagged_with(%w[a b], :all=>true).where{name.like "%1"}.distinct.count.should == 2
-      TaggableModel.tagged_with(%w[a b], :all=>true, :on => :skills).where{name.like "%1"}.distinct.count.should == 1
-
+      TaggableModel.tagged_with(%w[a b], :all=>true).where("name LIKE '%1'").distinct.count.should == 2
+      TaggableModel.tagged_with(%w[a b], :all=>true, :on => :skills).where("name LIKE '%1'").distinct.count.should == 1
     end
   end
-  describe "querying tags" do
 
+  describe "querying tags" do
     before :each do
       @user0 = User.create :name => "brad"
       @user1 = User.create :name => "hannah"
@@ -157,8 +155,7 @@ describe TaggableModel do
 
         # It should be possible to cascade active relation queries on
         # the
-        r = TaggableModel.tagged_with(["a", "b", "german"]).
-            where{tags_count>2}.count.should == 2
+        r = TaggableModel.tagged_with(["a", "b", "german"]).where("tags_count > 2").count.should == 2
 
         # The min option is a shortcut for a query on tags_count
         r = TaggableModel.tagged_with(["a", "b", "german"], :min => 2).count.should == 2
@@ -177,7 +174,6 @@ describe TaggableModel do
         r.find{|i|i.name == "10"}.tags_count.should == 1
         r.find{|i|i.name == "11"}.should be_nil
         r.find{|i|i.name == "21"}.should be_nil
-
       end
     end
 
@@ -278,7 +274,7 @@ describe TaggableModel do
           q0.should include @t00
           q0.should include @t01
 
-          q0 = TaggableModel.tagged_with(["a", "b"], :on => :skills, :all => true ).where{foo=="A"}
+          q0 = TaggableModel.tagged_with(["a", "b"], :on => :skills, :all => true ).where("foo = 'A'")
           q0.count.should == 1
           q0.should include @t00
           q0.should_not include @t01
@@ -318,24 +314,18 @@ describe TaggableModel do
               project("*").project(counts[:count_all])
 
           # puts users.to_sql
-
         end
       end
 
       describe "Using in subqueries" do
         it "should be possible to select the 'id' of the relation to use in a subquery" do
-
-          q = TaggableModel.where do
-            id.in(TaggableModel.tagged_with(["a", "b"]).select{id}) &
-                id.in(TaggableModel.tagged_with(["c"]).select{id})
-          end
+          q = TaggableModel.where(id: TaggableModel.tagged_with(['a', 'b']).select(:id))
+                                                   .where(id: TaggableModel.tagged_with(["c"]).select(:id))
           q.count.should == 2
 
-          TaggableModel.where do
-            id.in(TaggableModel.tagged_with(["a", "b"]).select{id})
-          end.count.should == 4
+          q = TaggableModel.where(id: TaggableModel.tagged_with(["a", "b"]).select(:id))
+          q.count.should == 4
         end
-
       end
 
       describe "#popular_tags" do
