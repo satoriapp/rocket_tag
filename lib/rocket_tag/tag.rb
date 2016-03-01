@@ -7,7 +7,7 @@ module RocketTag
 
 
     def self.by_taggable_type(type)
-      joins(:taggings).where(taggings: { taggable_type: 'TaggableModel'.to_s })
+      joins(:taggings).where(taggings: { taggable_type: type.to_s })
     end
 
     def tags_count
