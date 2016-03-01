@@ -114,8 +114,7 @@ module RocketTag
         }.flatten(1)]
 
         # Exclude self from the results
-        q.where{id!=my{id}}
-
+        q.where.not(id: self.id)
       end
     end
 
