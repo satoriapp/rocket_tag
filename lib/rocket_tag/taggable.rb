@@ -153,29 +153,7 @@ module RocketTag
         end
       end
 
-      # Filters tags according to
-      # context. context param can
-      # be either a single context
-      # id or an array of context ids
-      def with_tag_context context
-        contexts = normalize_contexts(context)
-
-        condition = if contexts
-
-          contexts.map do |context|
-            squeel do
-              (taggings.context == context.to_s)
-            end
-          end.inject do |s, t|
-            s | t
-          end
-
-        end
-
-      end
-
       def tagged_with tags_list, options = {}
-
         # Grab table name
         t = self.table_name
 
@@ -193,12 +171,17 @@ module RocketTag
             end
 
             q = q.where(c)
-
           else
+            # Make sure that our context will be an array.
+            contexts_array = normalize_contexts(options.delete(:on))
+
             # Any tag can match any context
-            q = q.
-                where{tags.name.in(tags_list)}.
-                where(with_tag_context(options.delete(:on)))
+            q = q.where{tags.name.in(tags_list)}
+
+            # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
+            q = q.where("taggings.context": contexts_array) if contexts_array.any?
+
+            q
         end
 
         q = q.group_by_all_columns.
@@ -237,14 +220,20 @@ module RocketTag
         # Grab table name
         table_name = self.to_s
 
+        # Make sure that our context will be an array.
+        contexts_array = normalize_contexts(options.delete(:on))
+
         q = RocketTag::Tag.joins(:taggings).
             where('taggings.taggable_type': table_name).       # Apply taggable type
-            where('taggings.taggable_id IN (?)', self_ids).    # Apply current scope
-            where(with_tag_context(options.delete(:on))).      # Restrict by context
-            group_by_all_columns.
-            select("COUNT(tags.id) AS tags_count").
-            select('tags.*').
-            order("tags_count desc")
+            where('taggings.taggable_id IN (?)', self_ids)     # Apply current scope
+
+        # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
+        q = q.where("taggings.context": contexts_array) if contexts_array.any?
+
+        q = q.group_by_all_columns.
+              select("COUNT(tags.id) AS tags_count").
+              select('tags.*').
+              order("tags_count desc")
 
         # Isolate the aggregate query by wrapping it as
         #
