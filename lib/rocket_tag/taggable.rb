@@ -1,4 +1,5 @@
 require 'squeel'
+
 module Squeel
   module Adapters
     module ActiveRecord
@@ -10,10 +11,9 @@ module Squeel
         #
         # This little helper generates such a group by
         def group_by_all_columns
-          cn = self.column_names
-          group { cn.map { |col| __send__(col) } }
+          column_names = self.column_names
+          group(column_names) if column_names.any?
         end
-
       end
     end
   end
