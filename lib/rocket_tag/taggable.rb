@@ -11,8 +11,7 @@ module Squeel
         #
         # This little helper generates such a group by
         def group_by_all_columns
-          column_names = self.column_names
-          group(column_names) if column_names.any?
+          group(self.column_names)
         end
       end
     end
