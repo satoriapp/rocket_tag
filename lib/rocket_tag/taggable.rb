@@ -156,7 +156,7 @@ module RocketTag
         # Grab table name
         t = self.table_name
 
-        q = joins{taggings.tag}
+        q = joins(taggings: :tag)
         case tags_list
           when Hash
             # A tag can only match it's context
@@ -175,7 +175,8 @@ module RocketTag
             contexts_array = normalize_contexts(options.delete(:on))
 
             # Any tag can match any context
-            q = q.where{tags.name.in(tags_list)}
+            # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
+            q = q.where("tags.name": tags_list) if tags_list.any?
 
             # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
             q = q.where("taggings.context": contexts_array) if contexts_array.any?
@@ -184,8 +185,8 @@ module RocketTag
         end
 
         q = q.group_by_all_columns.
-            select{count(tags.id).as( tags_count)}.
-            select{"#{t}.*"}.
+            select("COUNT(tags.id) AS tags_count").
+            select("#{t}.*").
             order("tags_count desc")
 
         # Isolate the aggregate uery by wrapping it as
@@ -195,14 +196,13 @@ module RocketTag
         # remove `.arel` dependency
         q = from(q.as(self.table_name))
 
-
         # Restrict by minimum tag counts if required
         min = options.delete :min
-        q = q.where{tags_count>=min} if min
+        q = q.where("tags_count >= ?", min) if min
 
         # Require all the tags if required
         all = options.delete :all
-        q = q.where{tags_count==tags_list.length} if all
+        q = q.where(tags_count: tags_list.length) if all
 
         # Return the relation
         q

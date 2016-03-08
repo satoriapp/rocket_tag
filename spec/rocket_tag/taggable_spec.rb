@@ -227,6 +227,22 @@ describe TaggableModel do
     end
 
     describe "#tagged_with" do
+      describe ":min" do
+        it "should return records with tags >= *min* tags" do
+          q0 = TaggableModel.tagged_with(["a", "german"], :min => 2).all
+          q0.length.should == 2
+          q0.should include @t00
+          q0.should include @t01
+        end
+
+        it "return empty array if we can't find required *min* tags" do
+          q0 = TaggableModel.tagged_with(["a", "german"], :min => 3).all
+          q0.length.should == 0
+          q0.should_not include @t00
+          q0.should_not include @t01
+        end
+      end
+
       describe ":all => true" do
         it "should return records where *all* tags match on any context" do
           q0 = TaggableModel.tagged_with(["a", "german"], :all => true ).all
@@ -235,6 +251,7 @@ describe TaggableModel do
           q0.should include @t01
         end
       end
+
       describe ":all => false" do
         it "should return records where *any* tags match on any context" do
           q0 = TaggableModel.tagged_with(["a", "german"] ).all
