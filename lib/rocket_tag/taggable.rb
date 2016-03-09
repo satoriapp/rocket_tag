@@ -192,9 +192,7 @@ module RocketTag
         # Isolate the aggregate uery by wrapping it as
         #
         # select * from ( ..... ) tags
-
-        # remove `.arel` dependency
-        q = from(q.as(self.table_name))
+        q = from("(#{q.to_sql}) #{self.table_name}")
 
         # Restrict by minimum tag counts if required
         min = options.delete :min
@@ -258,7 +256,7 @@ module RocketTag
           @setup_for_rocket_tag = true
           class_eval do
             default_scope do
-              preload{taggings}.preload{tags}
+              preload(:taggings).preload(:tags)
             end
 
             before_save do
