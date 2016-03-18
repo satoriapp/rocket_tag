@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'activerecord', '>= 3.2.0'
-gem 'pry'
+# gem 'pry', '0.10.3'
 
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
