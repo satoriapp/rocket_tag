@@ -155,21 +155,20 @@ module RocketTag
       def tagged_with tags_list, options = {}
         # Grab table name
         t = self.table_name
-
         q = joins(taggings: :tag)
+
         case tags_list
           when Hash
             # A tag can only match it's context
+            tag_table = Tag.arel_table
+            tagging_table = Tagging.arel_table
 
-            c = tags_list.each_key.map do |context|
-              squeel do
-                tags.name.in(tags_list[context]) & (taggings.context == context.to_s)
-              end
-            end.inject do |s,t|
-              s | t
-            end
+            # 'Array' of nodes, each node consists of 2 queries with AND condition.
+            nodes = tags_list.each_key.collect{ |context| tag_table[:name].in(tags_list[context]).and(tagging_table[:context].eq(context)) }
+            # Chain all noded together by OR condition
+            nodes_grouped_by_or = nodes.inject(nodes.shift) { |memo, node| memo.or(Arel::Nodes::Grouping.new(node)) }
 
-            q = q.where(c)
+            q = q.where(nodes_grouped_by_or)
           else
             # Make sure that our context will be an array.
             contexts_array = normalize_contexts(options.delete(:on))

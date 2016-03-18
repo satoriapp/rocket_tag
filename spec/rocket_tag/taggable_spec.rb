@@ -186,9 +186,10 @@ describe TaggableModel do
 
     describe "#tagged_similar" do
       it "should return similar items" do
+        @t00.tagged_similar(:on => :needs).count.should == 0
+        @t00.tagged_similar(:on => :offerings).count.should == 0
         @t00.tagged_similar(:on => :skills).count.should == 3
         @t00.tagged_similar(:on => :languages).count.should == 3
-
         @t00.tagged_similar(:on => [:languages, :skills]).count.should == 4
 
         # Effectively similar to specifying all the contexts in
