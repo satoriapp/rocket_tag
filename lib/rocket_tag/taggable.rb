@@ -253,7 +253,7 @@ module RocketTag
                 destroy_tags_for_context context
 
                 # Find existing tags
-                exisiting_tags = Tag.where{name.in(list)}
+                exisiting_tags = list.any? ? Tag.where('name IN (?)', list) : []
                 exisiting_tag_names = exisiting_tags.map &:name
 
                 # Find missing tags
