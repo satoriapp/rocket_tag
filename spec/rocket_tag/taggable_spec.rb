@@ -229,6 +229,23 @@ describe TaggableModel do
     end
 
     describe "#tagged_with" do
+      describe "different input types" do
+        it "finds tags by string" do
+          q0 = TaggableModel.tagged_with("a").to_a
+          q0.length.should == 4
+          q0.should include @t00
+          q0.should include @t01
+          q0.should include @t10
+          q0.should include @t11
+        end
+
+        it "raises error when we pass object" do
+          expect do
+            q0 = TaggableModel.tagged_with(Object).to_a
+          end.to raise_error
+        end
+      end
+
       describe ":min" do
         it "should return records with tags >= *min* tags" do
           q0 = TaggableModel.tagged_with(["a", "german"], :min => 2).to_a

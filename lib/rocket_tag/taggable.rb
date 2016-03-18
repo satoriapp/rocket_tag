@@ -123,6 +123,17 @@ module RocketTag
         contexts
       end
 
+      def normalize_tags_list(tags_list)
+        case tags_list.class.to_s
+          when 'String'
+            [tags_list]
+          when 'Array'
+            tags_list
+          else
+            raise "Provided tags: #{tags_list} are not allowed. You can pass Array or String only."
+        end
+      end
+
       # Verify contexts are valid for the taggable type
       def validate_contexts contexts
         contexts.each do |context|
@@ -150,6 +161,9 @@ module RocketTag
 
             q = q.where(nodes_grouped_by_or)
           else
+            # Convert string to array if nessesary.
+            tags_list = normalize_tags_list(tags_list)
+
             # Make sure that our context will be an array.
             contexts_array = normalize_contexts(options.delete(:on))
 
