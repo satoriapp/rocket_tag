@@ -1,5 +1,3 @@
-require 'squeel'
-
 module RocketTag
   module Taggable
     def self.included(base)

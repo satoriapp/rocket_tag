@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 
 gem 'activerecord', '>= 3.2.0'
-gem 'squeel',       '1.2.3', :require => false
 gem 'pry'
 
 # Add dependencies to develop your gem here.
