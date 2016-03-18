@@ -130,16 +130,11 @@ describe TaggableModel do
 
     describe "#tagged_with" do
       it "should count the number of matched tags" do
-
         #<TaggableModel id: 2, name: "00", type: nil, foo: "A"> - 3 - german, french, a, b, x
         #<TaggableModel id: 3, name: "01", type: nil, foo: "B"> - 3 - german, italian, a, b, y
         #<TaggableModel id: 4, name: "10", type: nil, foo: "A"> - 1 - a, c
         #<TaggableModel id: 5, name: "11", type: nil, foo: "B"> - 1 - a, c
         #<TaggableModel id: 7, name: "21", type: nil, foo: "B"> - 1 - german, jinglish, c, d
-
-        #           r = TaggableModel.tagged_with(["a", "b", "german"]).all.each do |m|
-        #             puts "#{m.inspect} - #{m.tags_count} - #{m.tags.map(&:name).join ', '}"
-        #           end
 
         r = TaggableModel.tagged_with(["a", "b", "german"])
         r.find{|i|i.name == "00"}.tags_count.should == 3
@@ -175,7 +170,7 @@ describe TaggableModel do
         # with this:
         #
         # q = from("(#{q.to_sql}) #{self.table_name}")
-        r = @user0.taggable_models.tagged_with(["a", "b", "german"], :on => :skills).all
+        r = @user0.taggable_models.tagged_with(["a", "b", "german"], :on => :skills).to_a
         # r.find{|i|i.name == "00"}.tags_count.should == 2
         r.find{|i|i.name == "01"}.should be_nil
         # r.find{|i|i.name == "10"}.tags_count.should == 1
@@ -198,9 +193,8 @@ describe TaggableModel do
       end
 
       it "should return similar items in the correct order with the correct tags_count" do
-
         # ----
-        similar = @t00.tagged_similar(:on => :skills).all
+        similar = @t00.tagged_similar(:on => :skills).to_a
         similar[0].id.should == @t01.id
         similar[1].id.should == @t10.id
         similar[2].id.should == @t11.id
@@ -210,7 +204,7 @@ describe TaggableModel do
         similar[2].tags_count.should == 1
 
         # ----
-        similar = @t00.tagged_similar(:on => :languages).all.sort
+        similar = @t00.tagged_similar(:on => :languages).to_a.sort
         similar[0].id.should == @t01.id
         similar[1].id.should == @t10.id
         similar[2].id.should == @t21.id
@@ -220,7 +214,7 @@ describe TaggableModel do
         similar[2].tags_count.should == 1
 
         # ----
-        similar = @t00.tagged_similar.all
+        similar = @t00.tagged_similar.to_a
         similar[0].id.should == @t01.id
         similar[1].id.should == @t10.id
         similar[2].id.should == @t11.id
@@ -237,14 +231,14 @@ describe TaggableModel do
     describe "#tagged_with" do
       describe ":min" do
         it "should return records with tags >= *min* tags" do
-          q0 = TaggableModel.tagged_with(["a", "german"], :min => 2).all
+          q0 = TaggableModel.tagged_with(["a", "german"], :min => 2).to_a
           q0.length.should == 2
           q0.should include @t00
           q0.should include @t01
         end
 
         it "return empty array if we can't find required *min* tags" do
-          q0 = TaggableModel.tagged_with(["a", "german"], :min => 3).all
+          q0 = TaggableModel.tagged_with(["a", "german"], :min => 3).to_a
           q0.length.should == 0
           q0.should_not include @t00
           q0.should_not include @t01
@@ -253,7 +247,7 @@ describe TaggableModel do
 
       describe ":all => true" do
         it "should return records where *all* tags match on any context" do
-          q0 = TaggableModel.tagged_with(["a", "german"], :all => true ).all
+          q0 = TaggableModel.tagged_with(["a", "german"], :all => true ).to_a
           q0.length.should == 2
           q0.should include @t00
           q0.should include @t01
@@ -262,7 +256,7 @@ describe TaggableModel do
 
       describe ":all => false" do
         it "should return records where *any* tags match on any context" do
-          q0 = TaggableModel.tagged_with(["a", "german"] ).all
+          q0 = TaggableModel.tagged_with(["a", "german"] ).to_a
           q0.length.should == 5
           q0.should include @t00
           q0.should include @t01
@@ -277,7 +271,7 @@ describe TaggableModel do
 
       describe ":all => false, :on => context" do
         it "should return records where *any* tags match on the specific context" do
-          q0 = TaggableModel.tagged_with(["a", "german"], :on => :skills ).all
+          q0 = TaggableModel.tagged_with(["a", "german"], :on => :skills ).to_a
           q0.length.should == 4
           q0.should include @t00
           q0.should include @t01
