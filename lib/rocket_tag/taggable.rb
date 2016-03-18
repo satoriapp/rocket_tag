@@ -1,23 +1,5 @@
 require 'squeel'
 
-module Squeel
-  module Adapters
-    module ActiveRecord
-      module RelationExtensions
-
-        # We really only want to group on id for practical
-        # purposes but POSTGRES requires that a group by outputs
-        # all the column names not under an aggregate function.
-        #
-        # This little helper generates such a group by
-        def group_by_all_columns
-          group(self.column_names)
-        end
-      end
-    end
-  end
-end
-
 module RocketTag
   module Taggable
     def self.included(base)
@@ -183,8 +165,9 @@ module RocketTag
             q
         end
 
-        q = q.group_by_all_columns.
-            select("COUNT(tags.id) AS tags_count").
+        q = q.group(q.column_names) if q.column_names.any?
+
+        q = q.select("COUNT(tags.id) AS tags_count").
             select("#{t}.*").
             order("tags_count desc")
 
@@ -226,8 +209,9 @@ module RocketTag
         # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
         q = q.where("taggings.context": contexts_array) if contexts_array.any?
 
-        q = q.group_by_all_columns.
-              select("COUNT(tags.id) AS tags_count").
+        q = q.group(q.column_names) if q.column_names.any?
+
+        q = q.select("COUNT(tags.id) AS tags_count").
               select('tags.*').
               order("tags_count desc")
 
