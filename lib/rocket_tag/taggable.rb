@@ -215,33 +215,18 @@ module RocketTag
         contexts_array = normalize_contexts(options.delete(:on))
 
         q = RocketTag::Tag.joins(:taggings).
-            where('taggings.taggable_type': table_name).       # Apply taggable type
-            where('taggings.taggable_id IN (?)', self_ids)     # Apply current scope
+            where('taggings.taggable_type': table_name).        # Apply taggable type
+            where('taggings.taggable_id IN (?)', self_ids).     # Apply current scope
+            uniq
 
         # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
         q = q.where("taggings.context": contexts_array) if contexts_array.any?
-
-        q = q.group(q.column_names) if q.column_names.any?
-
-        q = q.select("COUNT(tags.id) AS tags_count").
-              select('tags.*').
-              order("tags_count desc")
-
-        # Isolate the aggregate query by wrapping it as
-        #
-        # select * from ( ..... ) tags
-        q = RocketTag::Tag.from("(#{q.to_sql}) tags")
-
-        # Restrict by minimum tag counts if required
-        min = options.delete :min
-        q = q.where("tags_count >= ?", min) if min
 
         # Return the relation
         q
       end
 
       # Generates a query that returns list of popular tags
-      # for given model with an extra column :tags_count.
       def popular_tags options={}
         tags(options)
       end

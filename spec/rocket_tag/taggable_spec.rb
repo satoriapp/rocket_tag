@@ -368,14 +368,13 @@ describe TaggableModel do
         it "should return correct list (and correctly ordered) of popular tags for class and context" do
           TaggableModel.popular_tags.count.should == RocketTag::Tag.all.count
           TaggableModel.popular_tags.limit(10).count.should == 10
-          TaggableModel.popular_tags.order('tags_count desc, name desc').first.name.should == 'c'
+          TaggableModel.popular_tags.order('name desc').first.name.should == 'y'
           TaggableModel.popular_tags.order('id asc').first.name.should == 'a'
           TaggableModel.popular_tags.order('id asc').last.name.should == 'jinglish'
           TaggableModel.popular_tags(:on=>:skills).order('name asc').first.name.should == 'a'
           TaggableModel.popular_tags(:on=>:skills).order('name asc').last.name.should == 'y'
           TaggableModel.popular_tags(:on=>[:skills, :languages]).order('id asc').first.name.should == 'a'
           TaggableModel.popular_tags(:on=>[:skills, :languages]).order('id asc').last.name.should == 'jinglish'
-          TaggableModel.popular_tags(:min=>2).count.should == 6 ## dirty!
         end
       end
 
