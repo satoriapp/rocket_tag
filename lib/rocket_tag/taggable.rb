@@ -177,9 +177,7 @@ module RocketTag
             q
         end
 
-        column_names = q.column_names.map { |x| "#{q.table_name}.#{x}" }
-
-        q = q.group(column_names) q.column_names.any?
+        q = q.group(q.column_names.map { |x| "#{t}.#{x}" }) q.column_names.any?
 
         q = q.select("COUNT(tags.id) AS tags_count").
             select("#{t}.*").
