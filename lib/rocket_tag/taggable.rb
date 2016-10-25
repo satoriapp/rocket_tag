@@ -178,7 +178,6 @@ module RocketTag
         end
 
         q = q.group(q.column_names.map { |x| "#{t}.#{x}" }) if q.column_names.any?
-
         q = q.select("COUNT(tags.id) AS tags_count").
             select("#{t}.*").
             order("tags_count desc")
