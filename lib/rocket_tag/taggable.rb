@@ -63,7 +63,7 @@ module RocketTag
         unless @tags_cached
           tags_by_context ||= send("taggings").group_by{|f| f.context }
           tags_by_context.each do |context,v|
-            write_context context, v.map{|t| t.tag.name}
+            write_context context, v.map{|t| t.tag.name unless t.tag.nil?}
           end
           @tags_cached = true
         end
