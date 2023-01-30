@@ -59,6 +59,10 @@ describe TaggableModel do
       @model.reload
       @model.needs.should == ["a"]
     end
+
+    it "returns self" do
+      @model.reload.should == @model
+    end
   end
 
   describe "combining with active relation" do
