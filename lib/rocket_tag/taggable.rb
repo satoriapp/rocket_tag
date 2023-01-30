@@ -50,13 +50,13 @@ module RocketTag
 
     module InstanceMethods
 
-      def reload_with_tags(options = nil)
+      def reload(options = nil)
         self.class.rocket_tag.contexts.each do |context|
           write_context context, []
         end
         @tags_cached = false
         cache_tags
-        reload_without_tags(options)
+        super(options)
       end
 
       def cache_tags
@@ -279,9 +279,8 @@ module RocketTag
 
       def attr_taggable *contexts
         unless class_variable_defined?(:@@acts_as_rocket_tag)
-          include RocketTag::Taggable::InstanceMethods
+          prepend RocketTag::Taggable::InstanceMethods
           class_variable_set(:@@acts_as_rocket_tag, true)
-          alias_method_chain :reload, :tags
         end
 
         rocket_tag.contexts += contexts
