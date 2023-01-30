@@ -6,7 +6,7 @@
 
 Gem::Specification.new do |s|
   s.name = "rocket_tag"
-  s.version = "0.6.0"
+  s.version = "0.6.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
@@ -44,7 +44,7 @@ Gem::Specification.new do |s|
     "spec/schema.rb",
     "spec/spec_helper.rb"
   ]
-  s.homepage = "http://github.com/bradphelan/rocket_tag"
+  s.homepage = "https://github.com/satoriapp/rocket_tag"
   s.licenses = ["MIT"]
   s.rubygems_version = "2.4.6"
   s.summary = "A modern fast tagging framework for Rails 3.1+"
