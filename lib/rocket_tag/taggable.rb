@@ -238,7 +238,7 @@ module RocketTag
               preload(:taggings).preload(:tags)
             end
 
-            before_save do
+            after_save do
               @tag_dirty ||= Set.new
 
               @tag_dirty.each do |context|

@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'activerecord', '~> 4.2'
+gem 'activerecord', '~> 5.2'
 # gem 'pry', '0.10.3'
 
 # Add dependencies to develop your gem here.
