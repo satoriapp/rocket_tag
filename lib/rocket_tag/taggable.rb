@@ -29,14 +29,14 @@ module RocketTag
       end
 
       def initialize klass
-        @klass = klass
+        @klass    = klass
         @contexts = Set.new
         setup_relations
       end
 
       def setup_relations
-        klass.has_many :taggings , :dependent => :destroy , :as => :taggable, :class_name => "RocketTag::Tagging"
-        klass.has_many :tags     , :source => :tag, :through => :taggings, :class_name => "RocketTag::Tag"
+        klass.has_many :taggings, :dependent => :destroy, :as => :taggable, :class_name => "RocketTag::Tagging"
+        klass.has_many :tags, :source => :tag, :through => :taggings, :class_name => "RocketTag::Tag"
       end
     end
 
@@ -61,16 +61,16 @@ module RocketTag
 
       def cache_tags
         unless @tags_cached
-          tags_by_context ||= send("taggings").group_by{|f| f.context }
-          tags_by_context.each do |context,v|
-            write_context context, v.map{|t| t.tag.name unless t.tag.nil?}
+          tags_by_context ||= send("taggings").group_by { |f| f.context }
+          tags_by_context.each do |context, v|
+            write_context context, v.map { |t| t.tag.name unless t.tag.nil? }
           end
           @tags_cached = true
         end
       end
 
       def write_context context, list
-        @contexts ||= {}
+        @contexts                 ||= {}
         @contexts[context.to_sym] = RocketTag.clean_tags(list)
       end
 
@@ -86,9 +86,9 @@ module RocketTag
         context = options.delete :on
 
         contexts = self.class.normalize_contexts context,
-          self.class.rocket_tag.contexts
+           self.class.rocket_tag.contexts
 
-        q = self.class.tagged_with Hash[*contexts.map{|c|
+        q = self.class.tagged_with Hash[*contexts.map { |c|
           [c, tags_for_context(c)]
         }.flatten(1)]
 
@@ -104,7 +104,7 @@ module RocketTag
       end
 
       def is_valid_context? context
-          rocket_tag.contexts.include? context
+        rocket_tag.contexts.include? context
       end
 
       def normalize_contexts(context, default_if_nil = [])
@@ -125,12 +125,12 @@ module RocketTag
 
       def normalize_tags_list(tags_list)
         case tags_list.class.to_s
-          when 'String'
-            [tags_list]
-          when 'Array'
-            tags_list
-          else
-            raise "Provided tags: #{tags_list} are not allowed. You can pass Array or String only."
+        when 'String'
+          [tags_list]
+        when 'Array'
+          tags_list
+        else
+          raise "Provided tags: #{tags_list} are not allowed. You can pass Array or String only."
         end
       end
 
@@ -149,38 +149,38 @@ module RocketTag
         q = joins(taggings: :tag)
 
         case tags_list
-          when Hash
-            # A tag can only match it's context
-            tag_table = Tag.arel_table
-            tagging_table = Tagging.arel_table
+        when Hash
+          # A tag can only match it's context
+          tag_table     = Tag.arel_table
+          tagging_table = Tagging.arel_table
 
-            # 'Array' of nodes, each node consists of 2 queries with AND condition.
-            nodes = tags_list.each_key.collect{ |context| tag_table[:name].in(tags_list[context]).and(tagging_table[:context].eq(context)) }
-            # Chain all noded together by OR condition
-            nodes_grouped_by_or = nodes.inject(nodes.shift) { |memo, node| memo.or(Arel::Nodes::Grouping.new(node)) }
+          # 'Array' of nodes, each node consists of 2 queries with AND condition.
+          nodes = tags_list.each_key.collect { |context| tag_table[:name].in(tags_list[context]).and(tagging_table[:context].eq(context)) }
+          # Chain all noded together by OR condition
+          nodes_grouped_by_or = nodes.inject(nodes.shift) { |memo, node| memo.or(Arel::Nodes::Grouping.new(node)) }
 
-            q = q.where(nodes_grouped_by_or)
-          else
-            # Convert string to array if nessesary.
-            tags_list = normalize_tags_list(tags_list)
+          q = q.where(nodes_grouped_by_or)
+        else
+          # Convert string to array if nessesary.
+          tags_list = normalize_tags_list(tags_list)
 
-            # Make sure that our context will be an array.
-            contexts_array = normalize_contexts(options.delete(:on))
+          # Make sure that our context will be an array.
+          contexts_array = normalize_contexts(options.delete(:on))
 
-            # Any tag can match any context
-            # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
-            q = q.where("tags.name": tags_list) if tags_list.any?
+          # Any tag can match any context
+          # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
+          q              = q.where("tags.name": tags_list) if tags_list.any?
 
-            # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
-            q = q.where("taggings.context": contexts_array) if contexts_array.any?
+          # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
+          q              = q.where("taggings.context": contexts_array) if contexts_array.any?
 
-            q
+          q
         end
 
         q = q.group(q.column_names.map { |x| "#{t}.#{x}" }) if q.column_names.any?
         q = q.select("COUNT(tags.id) AS tags_count").
-            select("#{t}.*").
-            order("tags_count desc")
+           select("#{t}.*").
+           order("tags_count desc")
 
         # Isolate the aggregate uery by wrapping it as
         #
@@ -189,11 +189,11 @@ module RocketTag
 
         # Restrict by minimum tag counts if required
         min = options.delete :min
-        q = q.where("tags_count >= ?", min) if min
+        q   = q.where("tags_count >= ?", min) if min
 
         # Require all the tags if required
         all = options.delete :all
-        q = q.where(tags_count: tags_list.length) if all
+        q   = q.where(tags_count: tags_list.length) if all
 
         # Return the relation
         q
@@ -214,9 +214,9 @@ module RocketTag
         contexts_array = normalize_contexts(options.delete(:on))
 
         q = RocketTag::Tag.joins(:taggings).
-            where('taggings.taggable_type': table_name).        # Apply taggable type
-            where('taggings.taggable_id IN (?)', self_ids).     # Apply current scope
-            uniq
+           where('taggings.taggable_type': table_name).# Apply taggable type
+        where('taggings.taggable_id IN (?)', self_ids).# Apply current scope
+        uniq
 
         # Apply context (IN query) only if array has some data otherwise we'll have weird problems.
         q = q.where("taggings.context": contexts_array) if contexts_array.any?
@@ -226,7 +226,7 @@ module RocketTag
       end
 
       # Generates a query that returns list of popular tags
-      def popular_tags options={}
+      def popular_tags options = {}
         tags(options)
       end
 
@@ -249,7 +249,7 @@ module RocketTag
                 destroy_tags_for_context context
 
                 # Find existing tags
-                exisiting_tags = list.any? ? Tag.where('name IN (?)', list) : []
+                exisiting_tags      = list.any? ? Tag.where('name IN (?)', list) : []
                 exisiting_tag_names = exisiting_tags.map &:name
 
                 # Find missing tags
@@ -265,9 +265,9 @@ module RocketTag
 
                 tags_to_assign.each do |tag|
                   tagging = Tagging.new :tag => tag,
-                    :taggable => self,
-                    :context => context,
-                    :tagger => nil
+                     :taggable               => self,
+                     :context                => context,
+                     :tagger                 => nil
                   self.taggings << tagging
                 end
               end
@@ -277,7 +277,7 @@ module RocketTag
         end
       end
 
-      def attr_taggable *contexts
+      def attr_taggable * contexts
         unless class_variable_defined?(:@@acts_as_rocket_tag)
           prepend RocketTag::Taggable::InstanceMethods
           class_variable_set(:@@acts_as_rocket_tag, true)
@@ -291,14 +291,13 @@ module RocketTag
           class_eval do
 
             has_many "#{context}_taggings".to_sym,
-              lambda { where(:context => context) },
-              :source => :taggable,
-              :as => :taggable
+               lambda { where(:context => context) },
+               :as     => :taggable
 
             has_many "#{context}_tags".to_sym,
-              lambda { where(["taggings.context = ?", context]) },
-              :source => :tag,
-              :through => :taggings
+               lambda { where(["taggings.context = ?", context]) },
+               :source  => :tag,
+               :through => :taggings
 
             validate context do
               if not send(context).kind_of? Enumerable
